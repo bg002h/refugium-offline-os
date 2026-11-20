@@ -1,0 +1,20 @@
+[Unit]
+Description=Disposable VM public signet test
+After=w3-vm-observe.service
+
+[Service]
+Type=oneshot
+User=live
+Group=live
+LimitMEMLOCK=67108864:67108864
+LimitCORE=0
+NoNewPrivileges=yes
+UMask=0077
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+StandardOutput=tty
+StandardError=tty
+TTYPath=/dev/ttyS0
+ExecStart=/usr/bin/python3 -B /usr/lib/refugium/review-control/observe-reviewed-helper.py /usr/lib/refugium/review-control
+
+[Install]
+WantedBy=multi-user.target

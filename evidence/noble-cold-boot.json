@@ -1,0 +1,134 @@
+{
+  "sha256_each_boot": [
+    "cc6e59412b6fb2c32de3d51ee96af3a284ac914e28a11c2df1ba9d224536b3cd",
+    "49abed6cdc3604bb29daf3aaf9574eefb28f817f7def63bfc56590d74c1d3a44"
+  ],
+  "boots": [
+    {
+      "active_swap": [],
+      "block_mounts": [
+        [
+          "/",
+          "/dev/loop0",
+          "7:0"
+        ]
+      ],
+      "boot": "ea752749-3068-45f6-924f-085ff2bf2777",
+      "mounts": {
+        "/": [
+          "squashfs",
+          "ro"
+        ],
+        "/home": [
+          "tmpfs",
+          "rw"
+        ],
+        "/run": [
+          "tmpfs",
+          "rw"
+        ],
+        "/tmp": [
+          "tmpfs",
+          "rw"
+        ],
+        "/var": [
+          "overlay",
+          "rw"
+        ]
+      },
+      "partitions": {
+        "W3INTERNAL": {
+          "dev": "253:1",
+          "disk": "vda",
+          "type": "vfat"
+        },
+        "W3SWAP": {
+          "dev": "253:2",
+          "disk": "vda",
+          "type": "swap"
+        },
+        "W3TRANSFER": {
+          "dev": "8:17",
+          "disk": "sdb",
+          "type": "vfat"
+        }
+      },
+      "previous": [],
+      "private_runtime": [
+        1000,
+        448,
+        true
+      ],
+      "swap_excluded": true,
+      "written": [
+        "/home/live/Sitting",
+        "/run/user/1000",
+        "/tmp",
+        "/var/log"
+      ]
+    },
+    {
+      "active_swap": [],
+      "block_mounts": [
+        [
+          "/",
+          "/dev/loop0",
+          "7:0"
+        ]
+      ],
+      "boot": "100a6535-292a-4a63-bfab-f936b6c0d1d7",
+      "mounts": {
+        "/": [
+          "squashfs",
+          "ro"
+        ],
+        "/home": [
+          "tmpfs",
+          "rw"
+        ],
+        "/run": [
+          "tmpfs",
+          "rw"
+        ],
+        "/tmp": [
+          "tmpfs",
+          "rw"
+        ],
+        "/var": [
+          "overlay",
+          "rw"
+        ]
+      },
+      "partitions": {
+        "W3INTERNAL": {
+          "dev": "253:1",
+          "disk": "vda",
+          "type": "vfat"
+        },
+        "W3SWAP": {
+          "dev": "253:2",
+          "disk": "vda",
+          "type": "swap"
+        },
+        "W3TRANSFER": {
+          "dev": "8:17",
+          "disk": "sdb",
+          "type": "vfat"
+        }
+      },
+      "previous": [],
+      "private_runtime": [
+        1000,
+        448,
+        true
+      ],
+      "swap_excluded": true,
+      "written": [
+        "/home/live/Sitting",
+        "/run/user/1000",
+        "/tmp",
+        "/var/log"
+      ]
+    }
+  ]
+}

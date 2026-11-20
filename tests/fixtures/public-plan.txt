@@ -1,0 +1,9 @@
+refugium-plan 1
+network signet
+plan-id 0000000c
+
+key C
+person holder
+role cosigner
+make draws
+seat @1 m/270028h/1h/1h

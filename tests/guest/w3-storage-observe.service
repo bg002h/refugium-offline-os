@@ -1,0 +1,10 @@
+[Unit]
+Description=Disposable VM cold boot observation
+After=w3-vm-observe.service systemd-udev-trigger.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 -B /usr/lib/refugium/observe-cold-boot.py
+
+[Install]
+WantedBy=multi-user.target

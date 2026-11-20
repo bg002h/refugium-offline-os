@@ -1,0 +1,13 @@
+refugium-handback 1
+network signet
+plan-id 0000000c
+plan-sha256 926a2c476b8ab0ed5b72e0ed2eceed29ae3c84dbb8b43b3f6994d2625e9ab264
+made-by mr-sitting 0.1.0-alpha.1 (00000000)
+networked no
+
+key C
+person holder
+role cosigner
+fingerprint 4ac33189
+record @1=[4ac33189/270028h/1h/1h]tpubDC5jZDFcEX8FsZp7kdDF6CPKd5nN1RiNYAjWrko1JmLU8hkTZNJYEBMJCBcmUbeXFjcD285gKUFbFY7Mm6vhjiGxMMVxFoH3ZLGyHUphVJh
+verified yes

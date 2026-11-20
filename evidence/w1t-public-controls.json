@@ -1,0 +1,66 @@
+{
+  "mr_revision": "5b439e23659e346edbdf7ef6c3f6d33f7e3d55eb",
+  "noble_vm": {
+    "changed_plan_rejected": true,
+    "handback": true,
+    "limit": [
+      67108864,
+      67108864
+    ],
+    "low_bytes_read": 23,
+    "low_exit": 2,
+    "low_lock_warning": true,
+    "matched": true,
+    "public_handback_sha256": "c327dd318544937e8709f84ee5902a963be43ccceabbefc7dd92254304c0f12e",
+    "sit_exit": 0,
+    "uid": 1000
+  },
+  "signal_tests_in_offline_linux_namespace": [
+    {
+      "signal": "SIGTERM",
+      "exit": 1,
+      "locked_kib_before_signal": 1464,
+      "private_dir_after": false,
+      "plates_after": false,
+      "handback_after": false,
+      "stop_report": true,
+      "claims_memory_wiped": true
+    },
+    {
+      "signal": "SIGKILL",
+      "exit": -9,
+      "locked_kib_before_signal": 1464,
+      "private_dir_after": true,
+      "plates_after": true,
+      "handback_after": false,
+      "stop_report": false,
+      "claims_memory_wiped": false
+    }
+  ],
+  "low_limit_entries_in_offline_linux_namespace": {
+    "sit": {
+      "exit": 1,
+      "bytes_read": 23,
+      "strict_refusal": false,
+      "lock_warning": true
+    },
+    "verify": {
+      "exit": 1,
+      "bytes_read": 23,
+      "strict_refusal": false,
+      "lock_warning": true
+    },
+    "root": {
+      "exit": 2,
+      "bytes_read": 23,
+      "strict_refusal": false,
+      "lock_warning": true
+    },
+    "child": {
+      "exit": 1,
+      "bytes_read": 23,
+      "strict_refusal": false,
+      "lock_warning": true
+    }
+  }
+}
