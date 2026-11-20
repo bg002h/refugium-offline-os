@@ -1,6 +1,7 @@
 {
   "role": "node",
-  "os_id": "refugium-node",
+  "os_id": "ubuntu",
+  "variant_id": "refugium-node",
   "suffix": "-mr-node",
   "config": "node.config",
   "applications": [],

@@ -13,6 +13,8 @@ Implement each group in order. First commit the test and its observed failure on
 | release | Use a trusted signature for the wrong image role. | `python3 tests/accept.py release` | `FAIL release: wrong release role accepted` |
 | rebuild | Change one byte in the second complete image. | `python3 tests/accept.py rebuild` | `FAIL rebuild: clean builds differ` |
 
+Use Canonical’s Noble release, updates and security pockets at the pinned timestamp for both roles. Run the terminal checks on Noble’s packaged executable. Keep Blockstream’s PPA on the node side when qualifying the W5 receiver packages.
+
 ## Kernel, boot and session
 
 | Test | Failing control | Command | Expected failure |
