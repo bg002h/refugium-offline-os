@@ -6,7 +6,7 @@
   "security": "https://snapshot.debian.org/archive/debian-security/20261118T000000Z/",
   "builder_release": "20261116-2664",
   "builder_sha512": "e53a93ef33f828ceed0e7278c2cc2753bdc7d5098fbfae15bd64b6d878db350ea3744247763a1c8ecb6b4019a0f623c38caf6038ad6f9c357fb4e01493ddf1a3",
-  "live_build_version": "1:20250814",
+  "live_build_version": "1:20250505+deb13u1",
   "kernel": "6.12.118",
   "kernel_tar_xz_sha256": "08308460320e852ac0745b2be3c7ae1cd81bdad713506ed7d817ba1ec9e1a5a5",
   "kernel_signature_primary_fingerprint": "647F28654894E3BD457199BE38DBBDC86092693E",
