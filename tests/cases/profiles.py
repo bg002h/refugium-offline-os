@@ -19,6 +19,8 @@ def check(root,work,command,require,blocked,component):
             'image roles share the wrong kernel')
     require('CONFIG_NETDEVICES=y' not in symbols(sitting) and 'CONFIG_NETDEVICES=y' in symbols(node),
             'image roles share the wrong kernel')
+    require({'CONFIG_FRAMEBUFFER_CONSOLE=y', 'CONFIG_DRM_FBDEV_EMULATION=y'} <= symbols(sitting),
+            'sitting kernel cannot display boot refusals on the framebuffer console')
     require('mr-sitting' in sitting['applications'] and 'mr-sitting' not in node['applications'],
             'image roles share the wrong kernel')
     require(set(sitting['applications'])=={'mr','mr-sitting','mr-gui','me','picotool'},'application roles differ')
