@@ -3,7 +3,7 @@
 set -eu
 [ "$#" -eq 5 ] || { echo 'Usage: pack-uki.sh ROLE ROOTFS KERNEL UKI-STUB OUTPUT' >&2; exit 2; }
 role=$1
-case "$role" in sitting-stick|node) ;; *) exit 2;; esac
+case "$role" in sitting-stick|node|signet-preview) ;; *) exit 2;; esac
 rootfs=$(realpath "$2")
 kernel=$(realpath "$3")
 stub=$(realpath "$4")
@@ -19,7 +19,13 @@ new=$work/init
 mkdir -p "$new"/bin "$new"/dev "$new"/proc "$new"/sys "$new"/newroot "$work"/efi/EFI/BOOT
 cp /usr/bin/busybox "$new/bin/busybox"
 for applet in mount losetup mkdir chmod chown sleep switch_root; do ln "$new/bin/busybox" "$new/bin/$applet"; done
-cp "$repo/image/boot/init" "$new/init"
+if [ "$role" = signet-preview ]; then
+    grep -Fxq 'ID=refugium-signet-test' "$rootfs/etc/os-release" || exit 2
+    cp "$repo/preview/signet/init" "$new/init"
+else
+    if grep -Fxq 'ID=refugium-signet-test' "$rootfs/etc/os-release"; then exit 2; fi
+    cp "$repo/image/boot/init" "$new/init"
+fi
 env -u SOURCE_DATE_EPOCH mksquashfs "$rootfs" "$new/system.squashfs" -noappend -no-progress -no-xattrs -comp xz -all-time "$SOURCE_DATE_EPOCH" -mkfs-time "$SOURCE_DATE_EPOCH" -processors 2 >/dev/null
 find "$new" -exec touch -h -d "@$SOURCE_DATE_EPOCH" '{}' +
 (cd "$new" && find . -mindepth 1 -printf '%P\0' | sort -z | cpio --null -o --quiet --reproducible --owner=0:0 -H newc) > "$work/newc"

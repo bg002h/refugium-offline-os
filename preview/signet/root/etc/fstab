@@ -1,0 +1,3 @@
+# UNCONFIGURED FSTAB FOR BASE SYSTEM
+
+LABEL=SIGNET_CHAIN /var/lib/refugium-signet ext4 rw,nodev,nosuid,noexec,noatime 0 0

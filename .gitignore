@@ -1,2 +1,10 @@
 .work/
 __pycache__/
+
+# Local preview media and instance state
+signet-state/
+*.qcow2
+*.img
+*.ext4
+*.fd
+.cookie

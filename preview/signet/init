@@ -1,0 +1,39 @@
+#!/bin/busybox sh
+# PID 1 in the EFI image's own initramfs. The root payload is embedded.
+set -eu
+export PATH=/bin
+stop() {
+    echo 'This stick could not verify its RAM-only session. Power off and boot a verified Refugium sitting stick.' >/dev/console
+    while :; do sleep 60; done
+}
+mount -t devtmpfs devtmpfs /dev || stop
+mount -t proc proc /proc || stop
+mount -t sysfs sysfs /sys || stop
+losetup -r /dev/loop0 /system.squashfs || stop
+mount -t squashfs -o ro /dev/loop0 /newroot || stop
+for p in run home tmp; do
+    case "$p" in tmp) perms=1777 ;; *) perms=0755 ;; esac
+    mount -t tmpfs -o "mode=$perms,nosuid,nodev" tmpfs "/newroot/$p" || stop
+done
+mkdir -p /newroot/run/var-upper /newroot/run/var-work
+mount -t overlay -o lowerdir=/newroot/var,upperdir=/newroot/run/var-upper,workdir=/newroot/run/var-work overlay /newroot/var || stop
+mkdir -p /newroot/home/live /newroot/run/user/1000 /newroot/home/live/Sitting
+chown -R 1000:1000 /newroot/home/live /newroot/run/user/1000
+chmod 0700 /newroot/home/live /newroot/run/user/1000 /newroot/home/live/Sitting
+mkdir -p /newroot/tmp/.X11-unix
+chmod 1777 /newroot/tmp/.X11-unix
+busybox cp /newroot/usr/local/share/personal-keys/pubkeys /newroot/home/live/pubkeys || stop
+chown 1000:1000 /newroot/home/live/pubkeys || stop
+chmod 0600 /newroot/home/live/pubkeys || stop
+busybox cmp -s /newroot/usr/local/share/personal-keys/pubkeys /newroot/home/live/pubkeys || stop
+echo "PERSONAL-KEYS home file verified" >/dev/ttyS0
+mkdir -p /newroot/home/live/.bitcoin/signet
+busybox ln -s /run/refugium-signet/.cookie /newroot/home/live/.bitcoin/signet/.cookie
+chown -R 1000:1000 /newroot/home/live/.bitcoin
+chmod 0700 /newroot/home/live/.bitcoin /newroot/home/live/.bitcoin/signet
+busybox ip link set lo up || stop
+busybox ip link set eth0 up || stop
+busybox ip addr add 10.0.2.15/24 dev eth0 || stop
+echo 'SIGNET-BOOT peer-only test network initialized' > /dev/ttyS0
+for p in proc sys dev; do mount --move "/$p" "/newroot/$p" || stop; done
+exec switch_root /newroot /sbin/init

@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+p=/var/lib/refugium-signet
+mountpoint -q "$p"
+test -d "$p/signet/chainstate"
+if [ "$(stat -c %u "$p")" != "$(id -u signet-node)" ]; then
+    chown -R signet-node:live "$p/signet"
+    chmod 0700 "$p" "$p/signet"
+    chown signet-node:live "$p"
+fi

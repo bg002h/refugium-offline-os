@@ -1,0 +1,17 @@
+#!/usr/bin/python3 -B
+"""Use the wallet user's normal signet endpoint before starting the GUI."""
+import json,subprocess,time
+cli=['/usr/local/bin/bitcoin-cli','-signet','-datadir=/home/live/.bitcoin','-rpcconnect=127.0.0.1','-rpcport=38332']
+deadline=time.monotonic()+30
+while time.monotonic()<deadline:
+    try:
+        def read(method):
+            return json.loads(subprocess.check_output(cli+[method],stderr=subprocess.DEVNULL,timeout=3))
+        info=read('getblockchaininfo')
+        peers=read('getpeerinfo')
+        if info['chain']=='signet' and not info['initialblockdownload'] and info['blocks']==info['headers'] and any(0<=p.get('synced_headers',-1)<=info['blocks'] for p in peers) and isinstance(read('listwallets'),list):
+            break
+    except (KeyError,OSError,ValueError,subprocess.SubprocessError):
+        pass
+    time.sleep(.5)
+# On a long catch-up, the wallet shows its normal node status and Retry control.

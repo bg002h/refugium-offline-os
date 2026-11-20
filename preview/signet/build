@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Recompose the signet desktop using the pinned clipboard-base disk and Core closure.
+set -euo pipefail
+if [[ $# != 5 ]]; then
+    echo 'Usage: build CLIPBOARD_BASE.img CORE.tar KERNEL EFI_STUB NEW_OUTPUT.img' >&2
+    exit 2
+fi
+base=$(realpath "$1")
+core=$(realpath "$2")
+kernel=$(realpath "$3")
+stub=$(realpath "$4")
+out=$(realpath -m "$5")
+here=$(cd -- "$(dirname -- "$0")" && pwd)
+repo=$(cd "$here/../.." && pwd)
+[[ ! -e $out && ! -L $out ]] || { echo 'Choose a new output file.' >&2; exit 2; }
+[[ $(id -u) == 0 ]] && systemd-detect-virt --quiet --vm || { echo 'Run inside a disposable build VM as root.' >&2; exit 2; }
+work=$(mktemp -d "${TMPDIR:-/var/tmp}/refugium-preview.XXXXXXXX")
+trap 'rm -rf -- "$work"' EXIT
+cd "$work"
+# Bind the exact base, including its viewer, wallet and full test fixture, to this recipe.
+check_input() {
+    local expected
+    expected=$(awk -v name="$1" '$2 == name {print $1}' "$here/SHA256SUMS")
+    [[ -n $expected && $(sha256sum < "$2" | cut -d ' ' -f 1) == "$expected" ]] || { echo "Input digest mismatch for $1" >&2; exit 1; }
+}
+check_input clipboard-base.img "$base"
+check_input core.tar "$core"
+check_input signet-kernel "$kernel"
+mcopy -i "$base@@1048576" '::/EFI/BOOT/BOOTX64.EFI' base.efi
+objcopy --dump-section .initrd=base.initrd base.efi disposable.efi
+rm base.efi disposable.efi
+gzip -dc base.initrd | cpio --quiet -id system.squashfs
+rm base.initrd
+unsquashfs -processors 3 -no-progress -d root system.squashfs
+rm system.squashfs
+check_input mr-sitting root/usr/bin/mr-sitting
+check_input mr-gui root/usr/bin/mr-gui
+cp -a --no-preserve=ownership "$here/root/." root/
+install -m 0755 "$repo/image/stick/x-terminal-emulator" root/usr/local/bin/x-terminal-emulator
+# This archive is checked before extraction. It contains the Bitcoin Core Nix runtime closure.
+tar -xf "$core" -C root
+core_bin=(root/nix/store/*-bitcoind-31.1/bin/bitcoind)
+[[ ${#core_bin[@]} == 1 && -x ${core_bin[0]} ]]
+core_dir="/${core_bin[0]%/bitcoind}"
+core_dir=${core_dir#/root}
+for name in bitcoind bitcoin-cli; do
+    ln -s "$core_dir/$name" "root/usr/local/bin/$name"
+done
+chroot root /usr/sbin/useradd --system --user-group --no-create-home --home-dir /var/lib/refugium-signet --shell /usr/sbin/nologin signet-node
+mkdir -p root/var/lib/refugium-signet
+wants=root/etc/systemd/system/multi-user.target.wants
+for observer in w3-strict-observe w3-full-closing w3-vm-observe; do rm -f "$wants/$observer.service"; done
+for unit in bitcoind-signet signet-status; do ln -s "../$unit.service" "$wants/$unit.service"; done
+export SOURCE_DATE_EPOCH=1795046400
+"$repo/scripts/pack-uki.sh" signet-preview "$work/root" "$kernel" "$stub" "$out"

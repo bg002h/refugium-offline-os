@@ -1,0 +1,16 @@
+#!/usr/bin/python3 -B
+import hashlib,os,resource,sys
+from pathlib import Path
+if Path('/etc/refugium-signet-test').read_text().strip()!='personal signet VM' or not os.uname().release.endswith('-refugium-signet-test'):
+    sys.exit('Unexpected signet test image or kernel')
+if resource.getrlimit(resource.RLIMIT_MEMLOCK)!=(67108864,67108864):
+    sys.exit('Unexpected wallet session memory lock limit')
+if Path('/proc/swaps').exists() and len(Path('/proc/swaps').read_text().splitlines())>1:
+    sys.exit('Swap is active')
+mounts={r.split()[4]:r.split(' - ')[1].split()[0] for r in Path('/proc/self/mountinfo').read_text().splitlines()}
+expected={'/':'squashfs','/home':'tmpfs','/run':'tmpfs','/tmp':'tmpfs','/var/lib/refugium-signet':'ext4'}
+if any(mounts.get(k)!=v for k,v in expected.items()):
+    sys.exit('Unexpected signet test VM storage layout')
+with open('/usr/bin/mr-sitting','rb') as f:
+    if hashlib.file_digest(f,'sha256').hexdigest()!=Path('/usr/lib/refugium/strict-helper.sha256').read_text().strip():
+        sys.exit('Unexpected sitting helper')

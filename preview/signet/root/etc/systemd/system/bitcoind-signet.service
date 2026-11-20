@@ -1,0 +1,23 @@
+[Unit]
+Description=Bitcoin Core public signet node
+After=local-fs.target
+RequiresMountsFor=/var/lib/refugium-signet
+[Service]
+Type=exec
+User=signet-node
+Group=live
+UMask=0077
+RuntimeDirectory=refugium-signet
+RuntimeDirectoryMode=0750
+NoNewPrivileges=yes
+LimitCORE=0
+ExecStartPre=+/usr/local/libexec/signet-own-volume
+ExecStartPre=/bin/mkdir -p /run/refugium-signet/wallets
+ExecStart=/usr/local/bin/bitcoind -datadir=/var/lib/refugium-signet -conf=/etc/refugium-signet.conf
+ExecStartPost=/usr/local/bin/bitcoin-cli -datadir=/var/lib/refugium-signet -conf=/etc/refugium-signet.conf -rpcwait -rpcwaittimeout=120 getblockcount
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=150
+TimeoutStopSec=150
+[Install]
+WantedBy=multi-user.target

@@ -2,6 +2,7 @@
 
 This repository holds the W3 design and local engineering work for the offline sitting stick and the base it shares with the secret-free node.
 
+- [Signet desktop preview](preview/signet/README.md) contains the running VM configuration, startup services, clipboard viewer and instructions to launch or rebuild the test image.
 - [Base decision memo](B6-base-memo.md) records why both roles target Ubuntu 24.04 LTS and how the node obtains Blockstream Satellite.
 - [Stick design draft](W3-stick-design-draft.md) covers the holder's journey, kernel, hardware, terminal, memory policy, media and updates.
 - [W3 specification](design/SPEC_w3_stick.md) defines the proposed holder screens, refusals and acceptance tests.

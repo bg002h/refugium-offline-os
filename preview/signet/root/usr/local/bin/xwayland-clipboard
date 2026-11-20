@@ -1,0 +1,3 @@
+#!/bin/sh
+export XWAYLAND_NO_GLAMOR=1
+exec /usr/bin/Xwayland -shm -extension GLX "$@"

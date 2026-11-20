@@ -1,0 +1,277 @@
+--- a/crates/mr-sitting/Cargo.toml
++++ b/crates/mr-sitting/Cargo.toml
+@@ -17,6 +17,9 @@
+ name = "mr-sitting"
+ path = "src/main.rs"
+
++[features]
++stick-strict-test = []
++
+ [dependencies]
+ mr-codec = { path = "../mr-codec" }
+ mr-cli = { path = "../mr-cli" }
+--- a/crates/mr-sitting/src/main.rs
++++ b/crates/mr-sitting/src/main.rs
+@@ -42,6 +42,8 @@
+ mod start;
+ #[cfg(target_os = "linux")]
+ mod steps;
++#[cfg(all(target_os = "linux", feature = "stick-strict-test"))]
++mod strict;
+ #[cfg(target_os = "linux")]
+ mod tui;
+ #[cfg(target_os = "linux")]
+@@ -195,8 +197,13 @@
+ const WORKER_STACK: usize = 1 << 20;
+
+ #[cfg(target_os = "linux")]
++#[cfg(not(feature = "stick-strict-test"))]
+ #[global_allocator]
+ static VALVE: valve::Valve = valve::Valve;
++
++#[cfg(all(target_os = "linux", feature = "stick-strict-test"))]
++#[global_allocator]
++static ALLOC: strict::StrictAlloc = strict::StrictAlloc;
+
+ #[cfg(target_os = "linux")]
+ fn main() -> std::process::ExitCode {
+@@ -212,17 +219,36 @@
+     let worker = std::thread::Builder::new()
+         .name("mr-sitting".into())
+         .stack_size(WORKER_STACK)
+-        .spawn(run_main)
+-        .expect("spawn the mr-sitting thread");
++        .spawn(run_main);
++    #[cfg(feature = "stick-strict-test")]
++    let worker = worker.unwrap_or_else(|_| strict::refuse());
++    #[cfg(not(feature = "stick-strict-test"))]
++    let worker = worker.expect("spawn the mr-sitting thread");
+     // A panic in the worker is a bug: exit 101, as a panicking main does.
+-    std::process::ExitCode::from(worker.join().unwrap_or(101))
++    let code = worker.join().unwrap_or(101);
++    #[cfg(feature = "stick-strict-test")]
++    if strict::stopping() && code == 0 {
++        return std::process::ExitCode::from(1);
++    }
++    std::process::ExitCode::from(code)
+ }
+
+ /// `mr-sitting --version`'s text: `<CARGO_PKG_VERSION> (<mr_cli::GIT_COMMIT>)`.
+ #[cfg(target_os = "linux")]
+ fn version() -> &'static str {
+     static V: std::sync::OnceLock<String> = std::sync::OnceLock::new();
+-    V.get_or_init(|| format!("{} ({})", env!("CARGO_PKG_VERSION"), mr_cli::GIT_COMMIT))
++    V.get_or_init(|| {
++        let tag = if cfg!(feature = "stick-strict-test") {
++            " [UNQUALIFIED stick-strict-test]"
++        } else {
++            ""
++        };
++        format!(
++            "{} ({}){tag}",
++            env!("CARGO_PKG_VERSION"),
++            mr_cli::GIT_COMMIT
++        )
++    })
+ }
+
+ /// A subcommand's body, run after the start checks.
+@@ -259,6 +285,13 @@
+             return u8::try_from(e.exit_code()).unwrap_or(2);
+         }
+     };
++    #[cfg(feature = "stick-strict-test")]
++    if !matches!(
++        &cli.command,
++        cli::Command::Glossary(_) | cli::Command::Practice(cli::PracticeArgs { case: None, .. })
++    ) {
++        hardening::harden();
++    }
+     let (network, run): (mr_codec::Network, Body) = match cli.command {
+         cli::Command::Root(a) => (
+             a.network,
+--- a/crates/mr-sitting/src/hardening.rs
++++ b/crates/mr-sitting/src/hardening.rs
+@@ -66,6 +66,9 @@
+ /// The real steps, ST-HARD-01 on stderr; once per process (E-SIT-48).
+ pub fn harden() {
+     static ONCE: std::sync::Once = std::sync::Once::new();
++    #[cfg(feature = "stick-strict-test")]
++    ONCE.call_once(crate::strict::harden);
++    #[cfg(not(feature = "stick-strict-test"))]
+     ONCE.call_once(harden_now);
+ }
+
+--- a/crates/mr-sitting/src/session.rs
++++ b/crates/mr-sitting/src/session.rs
+@@ -330,7 +330,17 @@
+     };
+     // The `Start` row was the first screen (it is in the list already).
+     s.steps.at(crate::steps::Id::Start);
+-    match s.go() {
++    let outcome = s.go();
++    #[cfg(feature = "stick-strict-test")]
++    if crate::strict::stopping() {
++        // The owner returns normally so Session and Zeroizing fields run their destructors.
++        let code = s.wipe_ram(1);
++        if s.ui.is_tui() {
++            s.ui.say_final(crate::strict::STOP_TEXT);
++        }
++        return code;
++    }
++    match outcome {
+         Ok(()) => 0,
+         Err(Stop) if s.ended => s.wipe_ram(1),
+         Err(Stop) => s.stopped(),
+@@ -671,6 +681,11 @@
+
+     /// `v`, or the stop; a goto the holder chose is noted for `go`.
+     fn out<T>(&mut self, v: Option<T>) -> R<T> {
++        #[cfg(feature = "stick-strict-test")]
++        if !crate::strict::can_continue() {
++            self.goto = None;
++            return Err(Stop);
++        }
+         match v {
+             Some(x) => Ok(x),
+             None => {
+--- /dev/null
++++ b/crates/mr-sitting/src/strict.rs
+@@ -0,0 +1,137 @@
++//! Scratch-only stick policy. All secret-bearing subcommands enter it before dispatch.
++use std::alloc::{GlobalAlloc, Layout, System};
++use std::ptr;
++use std::sync::atomic::{AtomicBool, AtomicPtr, Ordering};
++
++const START: &[u8] = b"mr-sitting could not secure its memory. No secret was read. Restart the sitting stick and try again.\n";
++pub const STOP_TEXT: &str =
++    "This sitting cannot continue with its memory locked. Stopping and cleaning up.";
++const INCOMPLETE: &[u8] = b"Cleanup could not be confirmed. Power off this test stick.\n";
++const RESERVE_BYTES: usize = 1024 * 1024;
++const CHECK_BYTES: usize = 64 * 1024;
++
++// The reserve never receives application data. MCL_CURRENT pins it at startup.
++static RESERVE: AtomicPtr<libc::c_void> = AtomicPtr::new(ptr::null_mut());
++static ACTIVE: AtomicBool = AtomicBool::new(false);
++static STOPPING: AtomicBool = AtomicBool::new(false);
++
++fn say(mut text: &[u8]) {
++    while !text.is_empty() {
++        // Static data only. No formatter, allocator or stdio mutex on this path.
++        let n = unsafe { libc::write(libc::STDERR_FILENO, text.as_ptr().cast(), text.len()) };
++        if n < 0 && unsafe { *libc::__errno_location() } == libc::EINTR {
++            continue;
++        }
++        if n <= 0 {
++            break;
++        }
++        text = &text[n as usize..];
++    }
++}
++
++pub fn refuse() -> ! {
++    say(START);
++    unsafe { libc::_exit(2) }
++}
++
++fn map(size: usize) -> *mut libc::c_void {
++    unsafe {
++        libc::mmap(
++            ptr::null_mut(),
++            size,
++            libc::PROT_READ | libc::PROT_WRITE,
++            libc::MAP_PRIVATE | libc::MAP_ANONYMOUS,
++            -1,
++            0,
++        )
++    }
++}
++
++pub fn harden() {
++    let zero = libc::rlimit {
++        rlim_cur: 0,
++        rlim_max: 0,
++    };
++    if unsafe { libc::setrlimit(libc::RLIMIT_CORE, &zero) } != 0
++        || unsafe { libc::prctl(libc::PR_SET_DUMPABLE, 0, 0, 0, 0) } != 0
++    {
++        refuse();
++    }
++    let reserve = map(RESERVE_BYTES);
++    if reserve == libc::MAP_FAILED
++        || unsafe { libc::mlockall(libc::MCL_CURRENT | libc::MCL_FUTURE) } != 0
++    {
++        refuse();
++    }
++    RESERVE.store(reserve, Ordering::Release);
++    ACTIVE.store(true, Ordering::Release);
++}
++
++fn request_stop() {
++    if !STOPPING.swap(true, Ordering::AcqRel) {
++        // Return only the unused reserve to the kernel. All surviving mappings stay locked,
++        // and any future mapping still has to satisfy MCL_FUTURE.
++        let reserve = RESERVE.swap(ptr::null_mut(), Ordering::AcqRel);
++        if !reserve.is_null() {
++            unsafe { libc::munmap(reserve, RESERVE_BYTES) };
++        }
++        say(STOP_TEXT.as_bytes());
++        say(b"\n");
++    }
++}
++
++pub fn stopping() -> bool {
++    STOPPING.load(Ordering::Acquire)
++}
++
++/// At a sitting input boundary the owner can still unwind and wipe its own state.
++pub fn can_continue() -> bool {
++    if stopping() {
++        return false;
++    }
++    let page = map(CHECK_BYTES);
++    if page == libc::MAP_FAILED {
++        request_stop();
++        return false;
++    }
++    unsafe { libc::munmap(page, CHECK_BYTES) };
++    true
++}
++
++/// A short allocation can finish after returning the spare headroom. The next sitting
++/// boundary observes the pending stop. If the allocator still cannot return usable
++/// storage, terminate without unlocking or claiming cleanup finished.
++pub struct StrictAlloc;
++fn allocate(f: impl Fn() -> *mut u8) -> *mut u8 {
++    let p = f();
++    if !p.is_null() {
++        return p;
++    }
++    if !ACTIVE.load(Ordering::Acquire) {
++        refuse();
++    }
++    request_stop();
++    let p = f();
++    if p.is_null() {
++        say(INCOMPLETE);
++        unsafe { libc::_exit(1) }
++    }
++    p
++}
++
++// SAFETY: all pointers are obtained, resized and freed by System using the caller's layout.
++// On failure realloc leaves the original allocation intact. No allocator call unwinds.
++unsafe impl GlobalAlloc for StrictAlloc {
++    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
++        allocate(|| unsafe { System.alloc(layout) })
++    }
++    unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
++        allocate(|| unsafe { System.alloc_zeroed(layout) })
++    }
++    unsafe fn realloc(&self, p: *mut u8, layout: Layout, size: usize) -> *mut u8 {
++        allocate(|| unsafe { System.realloc(p, layout, size) })
++    }
++    unsafe fn dealloc(&self, p: *mut u8, layout: Layout) {
++        unsafe { System.dealloc(p, layout) };
++    }
++}

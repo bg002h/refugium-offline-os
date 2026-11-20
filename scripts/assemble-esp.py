@@ -53,7 +53,7 @@ def assemble(esp,target,role):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('role',choices=('sitting-stick','node'))
+    parser.add_argument('role',choices=('sitting-stick','node','signet-preview'))
     parser.add_argument('esp',type=Path)
     parser.add_argument('output',type=Path)
     args=parser.parse_args()

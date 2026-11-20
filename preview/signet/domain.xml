@@ -1,0 +1,61 @@
+<domain xmlns:qemu="http://libvirt.org/schemas/domain/qemu/1.0" type="kvm">
+  <name>refugium-signet</name>
+  <title>Refugium OS – Signet</title>
+  <memory unit="MiB">4608</memory>
+  <vcpu placement="static">4</vcpu>
+  <os>
+    <type arch="x86_64" machine="q35">hvm</type>
+    <loader readonly="yes" type="pflash" format="raw">OVMF_CODE.fd</loader>
+    <nvram template="OVMF_VARS.fd" format="raw">guest-vars.fd</nvram>
+  </os>
+  <features>
+    <acpi />
+    <apic />
+  </features>
+  <cpu mode="host-passthrough" />
+  <clock offset="utc" />
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>destroy</on_crash>
+  <devices>
+    <emulator>/usr/bin/qemu-system-x86_64</emulator>
+    <controller type="usb" model="qemu-xhci" />
+    <disk type="file" device="disk">
+      <driver name="qemu" type="raw" />
+      <source file="refugium-signet.img" />
+      <target dev="sda" bus="usb" />
+      <readonly />
+      <boot order="1" />
+      <address type="usb" bus="0" port="1" />
+    </disk>
+    <input type="keyboard" bus="usb" />
+    <input type="tablet" bus="usb" />
+    <graphics type="spice">
+      <listen type="socket" />
+      <clipboard copypaste="no" />
+      <filetransfer enable="no" />
+    </graphics>
+    <audio id="1" type="none" />
+    <video>
+      <model type="virtio" heads="1" primary="yes">
+        <resolution x="1920" y="1200" />
+      </model>
+    </video>
+    <serial type="file">
+      <source path="boot.log" append="off" />
+      <target type="isa-serial" port="0" />
+    </serial>
+    <memballoon model="none" />
+    <disk type="file" device="disk">
+      <driver name="qemu" type="raw" cache="none" discard="unmap" />
+      <source file="signet-chain.ext4" />
+      <target dev="vda" bus="virtio" />
+    </disk>
+  </devices>
+  <qemu:commandline>
+    <qemu:arg value="-netdev" />
+    <qemu:arg value="{&quot;type&quot;:&quot;user&quot;,&quot;id&quot;:&quot;signetpeer&quot;,&quot;restrict&quot;:true,&quot;ipv6&quot;:false,&quot;guestfwd&quot;:[{&quot;str&quot;:&quot;tcp:10.0.2.100:38333-tcp:127.0.0.1:38333,reconnect-ms=2000&quot;}]}" />
+    <qemu:arg value="-device" />
+    <qemu:arg value="virtio-net-pci,bus=pcie.0,addr=0x0e,netdev=signetpeer,mac=52:54:00:37:83:33" />
+  </qemu:commandline>
+</domain>

@@ -1,0 +1,12 @@
+[Unit]
+Description=Local wallet signet connection status
+After=bitcoind-signet.service
+[Service]
+User=live
+Group=live
+NoNewPrivileges=yes
+ExecStart=/usr/local/libexec/signet-status.py
+StandardOutput=tty
+TTYPath=/dev/ttyS0
+[Install]
+WantedBy=multi-user.target

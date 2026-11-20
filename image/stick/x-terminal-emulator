@@ -1,10 +1,47 @@
-#!/bin/sh
-# I6 passes the fixed shell and executable as separate arguments.
-set -eu
-[ "$#" -ge 5 ] && [ "$1" = -e ] && [ "$2" = /bin/sh ] && [ "$3" = -c ] || exit 2
-shift
-case "${XDG_RUNTIME_DIR:-}" in
-    /*) export TMPDIR="$XDG_RUNTIME_DIR" ;;
-    *) exit 2 ;;
-esac
-exec /usr/bin/alacritty --config-file /etc/refugium/alacritty.toml -e "$@"
+#!/usr/bin/python3 -I
+"""Launch the sitting in Alacritty at the selected display's logical height."""
+import ctypes
+import os
+import sys
+
+
+class Rectangle(ctypes.Structure):
+    _fields_ = [(name, ctypes.c_int) for name in ('x', 'y', 'width', 'height')]
+
+
+def window_options():
+    try:
+        gdk = ctypes.CDLL('libgdk-3.so.0')
+    except OSError:
+        return []
+    if not gdk.gdk_init_check(None, None):
+        return []
+    gdk.gdk_display_get_default.restype = ctypes.c_void_p
+    gdk.gdk_display_get_monitor.argtypes = [ctypes.c_void_p, ctypes.c_int]
+    gdk.gdk_display_get_monitor.restype = ctypes.c_void_p
+    gdk.gdk_monitor_get_geometry.argtypes = [ctypes.c_void_p, ctypes.POINTER(Rectangle)]
+    monitor = gdk.gdk_display_get_monitor(gdk.gdk_display_get_default(), 0)
+    if not monitor:
+        return []
+    bounds = Rectangle()
+    gdk.gdk_monitor_get_geometry(monitor, ctypes.byref(bounds))
+    if bounds.width <= 0 or bounds.height <= 0:
+        return []
+
+    # The Noble desktop's default grid is 88 columns with 9 x 18 logical-pixel
+    # cells. Its Weston title bar measures 35 pixels. Round to the nearest row.
+    lines = max(1, round((bounds.height * .95 - 35) / 18))
+    columns = max(1, min(88, (bounds.width - 8) // 9))
+    return ['-o', f'window.dimensions.lines={lines}', '-o', f'window.dimensions.columns={columns}',
+            '-o', 'window.padding.x=4']
+
+
+if len(sys.argv) < 6 or sys.argv[1:4] != ['-e', '/bin/sh', '-c']:
+    sys.exit(2)
+runtime = os.environ.get('XDG_RUNTIME_DIR', '')
+if not os.path.isabs(runtime):
+    sys.exit(2)
+os.environ['TMPDIR'] = runtime
+terminal = '/usr/bin/alacritty'
+os.execv(terminal, [terminal, '--config-file', '/etc/refugium/alacritty.toml',
+                    *window_options(), *sys.argv[1:]])
