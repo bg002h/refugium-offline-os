@@ -1,0 +1,14 @@
+Linux 6.12.118 x86-64 kernel probe
+Kernel source SHA-256 08308460320e852ac0745b2be3c7ae1cd81bdad713506ed7d817ba1ec9e1a5a5
+Resolved config SHA-256 5caaa96ce72df78e04e55cabc25d9292a1b14c626af9a124ec3b2a7c1f38f57a
+Kernel binary SHA-256 c906ab0032ca9f8473bf745f5c089e5073cf34ef87063a87c1951cce3b49924d
+Booted under QEMU/KVM with restricted user-mode network backends, e1000 and virtio-net-pci presented.
+Guest PID 1 inspected PCI and virtio enumeration, then ran the lock probe as an unprivileged process.
+
+W3-PROBE transport_or_driver=virtio-pci
+W3-PROBE net=lo pci_ethernet_without_network_driver=2 proc_swaps=absent proc_modules=absent
+W3-PROBE unprivileged_memlock_bytes=67108864 locked_before_KiB=1200 locked_after_KiB=2224
+W3-PROBE PASS
+
+The virtio PCI transport bound. Its network function had no driver. The emulated e1000 had no driver.
+This tests the custom kernel and a small static process. It does not execute the wallet, helper, image preflight or UEFI boot path.

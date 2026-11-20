@@ -7,6 +7,7 @@ This repository holds the W3 design and local engineering work for the offline s
 - [W3 specification](design/SPEC_w3_stick.md) defines the proposed holder screens, refusals and acceptance tests.
 - [Distribution research](design/agent-reports/base-options.md) records the package-index comparison.
 - [Platform research](design/agent-reports/platform-evidence.md) records the kernel and terminal experiments.
+- [Kernel boot observations](evidence/kernel-boot.txt) record the guest with two network adapters presented and a real unprivileged memory-lock check.
 - [Component observations](evidence/component-observations.txt) give the resolved kernel properties and the measured terminal history with its positive control.
 
 The dated secure-memory rulings in the coordinator repository govern the stick. A released image requires complete image builds, boots and application integration evidence. Component measurements alone do not qualify an image.
