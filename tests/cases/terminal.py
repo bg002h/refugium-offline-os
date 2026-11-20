@@ -14,7 +14,7 @@ def check(root,work,command,require,blocked,component):
         capture=json.loads(grid.read_text())['raw']
         require(capture['len']==capture['visible_lines'],'terminal exposed protected history or text')
     config=tomllib.loads(policy.read_text())
-    require(config['scrolling']['history']==0 and not config['general']['ipc_socket'] and not config['general']['live_config_reload'] and config['terminal']['osc52']=='Disabled','terminal exposed protected history or text')
+    require(config['scrolling']['history']==0 and config.get('ipc_socket') is False and config.get('live_config_reload') is False and config['terminal']['osc52']=='Disabled','terminal exposed protected history or text')
     for bad in (['--ref-test'],['-e'],['-e','--ref-test'],['-e','/bin/sh','-x'],['-e','/usr/bin/env','--ref-test']):
         result=command([launcher,*bad],env={'PATH':'/usr/bin:/bin','XDG_RUNTIME_DIR':str(work)})
         require(result.returncode==2,'terminal exposed protected history or text')

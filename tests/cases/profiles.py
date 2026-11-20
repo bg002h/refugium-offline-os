@@ -4,6 +4,9 @@ from pathlib import Path
 
 
 def check(root,work,command,require,blocked,component):
+    base = json.loads((root / 'image/base.lock.json').read_text())
+    require(base.get('suite') == 'noble' and base['architecture'] == 'amd64',
+            'image base differs from the receiver-supported target')
     folder=Path(os.environ.get('W3_PROFILES',root/'image/profiles'))
     if not folder.is_dir():
         raise blocked('no role manifests supplied')
