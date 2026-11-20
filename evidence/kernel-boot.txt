@@ -12,3 +12,6 @@ W3-PROBE PASS
 
 The virtio PCI transport bound. Its network function had no driver. The emulated e1000 had no driver.
 This tests the custom kernel and a small static process. It does not execute the wallet, helper, image preflight or UEFI boot path.
+
+Input authentication: the detached upstream signature verified over the uncompressed Linux tar.
+The signing primary fingerprint was 647F28654894E3BD457199BE38DBBDC86092693E.
