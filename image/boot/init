@@ -1,0 +1,24 @@
+#!/bin/busybox sh
+# PID 1 in the EFI image's own initramfs. The root payload is embedded.
+set -eu
+export PATH=/bin
+stop() {
+    echo 'This stick could not verify its RAM-only session. Power off and boot a verified Refugium sitting stick.' >/dev/console
+    while :; do sleep 60; done
+}
+mount -t devtmpfs devtmpfs /dev || stop
+mount -t proc proc /proc || stop
+mount -t sysfs sysfs /sys || stop
+losetup -r /dev/loop0 /system.squashfs || stop
+mount -t squashfs -o ro /dev/loop0 /newroot || stop
+for p in run home tmp; do
+    case "$p" in tmp) perms=1777 ;; *) perms=0755 ;; esac
+    mount -t tmpfs -o "mode=$perms,nosuid,nodev" tmpfs "/newroot/$p" || stop
+done
+mkdir -p /newroot/run/var-upper /newroot/run/var-work
+mount -t overlay -o lowerdir=/newroot/var,upperdir=/newroot/run/var-upper,workdir=/newroot/run/var-work overlay /newroot/var || stop
+mkdir -p /newroot/home/live /newroot/run/user/1000 /newroot/home/live/Sitting
+chown -R 1000:1000 /newroot/home/live /newroot/run/user/1000
+chmod 0700 /newroot/home/live /newroot/run/user/1000 /newroot/home/live/Sitting
+for p in proc sys dev; do mount --move "/$p" "/newroot/$p" || stop; done
+exec switch_root /newroot /sbin/init
