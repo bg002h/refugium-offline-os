@@ -1,0 +1,10 @@
+#!/bin/sh
+# I6 passes the fixed shell and executable as separate arguments.
+set -eu
+[ "$#" -ge 5 ] && [ "$1" = -e ] && [ "$2" = /bin/sh ] && [ "$3" = -c ] || exit 2
+shift
+case "${XDG_RUNTIME_DIR:-}" in
+    /*) export TMPDIR="$XDG_RUNTIME_DIR" ;;
+    *) exit 2 ;;
+esac
+exec /usr/bin/alacritty --config-file /etc/refugium/alacritty.toml -e "$@"
