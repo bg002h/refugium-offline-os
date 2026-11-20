@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Recompose the signet desktop using the pinned clipboard-base disk and Core closure.
 set -euo pipefail
-if [[ $# != 5 ]]; then
-    echo 'Usage: build CLIPBOARD_BASE.img CORE.tar KERNEL EFI_STUB NEW_OUTPUT.img' >&2
+if [[ $# != 5 && $# != 6 ]]; then
+    echo 'Usage: build CLIPBOARD_BASE.img CORE.tar KERNEL EFI_STUB NEW_OUTPUT.img [SEED_CREATOR_BINARY]' >&2
     exit 2
 fi
 base=$(realpath "$1")
@@ -10,6 +10,8 @@ core=$(realpath "$2")
 kernel=$(realpath "$3")
 stub=$(realpath "$4")
 out=$(realpath -m "$5")
+seed_creator=${6:+$(realpath "$6")}
+weston_build=${WESTON_BUILD_DIR:+$(realpath "$WESTON_BUILD_DIR")}
 here=$(cd -- "$(dirname -- "$0")" && pwd)
 repo=$(cd "$here/../.." && pwd)
 [[ ! -e $out && ! -L $out ]] || { echo 'Choose a new output file.' >&2; exit 2; }
@@ -36,7 +38,17 @@ rm system.squashfs
 check_input mr-sitting root/usr/bin/mr-sitting
 check_input mr-gui root/usr/bin/mr-gui
 cp -a --no-preserve=ownership "$here/root/." root/
+# Build the viewer against the Ubuntu libraries used by the guest.
+cc "$here/public-keys.c" $(pkg-config --cflags --libs gtk+-3.0) -o root/usr/local/bin/personal-key-viewer-gtk
 install -Dm0644 "$repo/image/session/refugium-offline.png" root/usr/share/backgrounds/refugium-offline.png
+if [[ -n $seed_creator ]]; then "$repo/scripts/install-seed-creator" root "$seed_creator"; fi
+if [[ -n $weston_build ]]; then
+    install -m 0755 "$weston_build/clients/weston-desktop-shell" root/usr/libexec/weston-desktop-shell
+    install -m 0644 "$weston_build/desktop-shell/desktop-shell.so" root/usr/lib/x86_64-linux-gnu/weston/desktop-shell.so
+    sed -i 's@^icon=/usr/share/icons/hicolor/32x32/apps/refugium-seed.png$@icon=/usr/share/icons/hicolor/64x64/apps/refugium-seed.png@' root/etc/refugium/weston.ini
+else
+    sed -i 's@/wallet.png$@/wallet-panel.png@;s@/terminal.png$@/terminal-panel.png@;s@/keys.png$@/keys-panel.png@' root/etc/refugium/weston.ini
+fi
 install -m 0755 "$repo/image/stick/x-terminal-emulator" root/usr/local/bin/x-terminal-emulator
 # This archive is checked before extraction. It contains the Bitcoin Core Nix runtime closure.
 tar -xf "$core" -C root

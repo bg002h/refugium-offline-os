@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
         return 1;
 
     GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(window), "Public keys");
+    gtk_window_set_title(GTK_WINDOW(window), "Public keys for testing");
     gtk_window_set_default_size(GTK_WINDOW(window), 870, 560);
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
