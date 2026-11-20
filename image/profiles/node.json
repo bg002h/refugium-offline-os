@@ -1,0 +1,8 @@
+{
+  "role": "node",
+  "os_id": "refugium-node",
+  "suffix": "-mr-node",
+  "config": "node.config",
+  "applications": [],
+  "packages": ["util-linux"]
+}

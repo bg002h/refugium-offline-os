@@ -1,0 +1,8 @@
+{
+  "role": "sitting-stick",
+  "os_id": "mr-sitting-stick",
+  "suffix": "-mr-sitting",
+  "config": "sitting.config",
+  "applications": ["mr", "mr-sitting", "mr-gui", "me", "picotool"],
+  "packages": ["weston", "alacritty", "libgl1-mesa-dri", "libegl1", "libwayland-egl1", "libxkbcommon0", "fonts-dejavu-core", "xdg-desktop-portal", "xdg-desktop-portal-gtk", "dbus-user-session"]
+}
