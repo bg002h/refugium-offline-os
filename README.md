@@ -1,6 +1,6 @@
-# Refugium OS
+# Refugium Offline OS
 
-This repository holds the W3 design and local engineering work for the offline sitting stick and the base it shares with the secret-free node.
+This repository is named `refugium-offline-os`. It holds the W3 design and engineering work for the offline sitting stick, together with its historical test previews. The Tor-enabled signet node is developed separately in `refugium-online-os`. The signet desktop preview below is a connected test fixture.
 
 - [Signet desktop preview](preview/signet/README.md) contains the running VM configuration, startup services, clipboard viewer and instructions to launch or rebuild the test image.
 - [Base decision memo](B6-base-memo.md) records why both roles target Ubuntu 24.04 LTS and how the node obtains Blockstream Satellite.
