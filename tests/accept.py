@@ -35,6 +35,7 @@ def main():
     choices = re.findall(r'^\| [BSUR]\d\d \| .+? \| ([a-z]+) \|', spec, re.M)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('case', choices=choices)
+    parser.add_argument('--component',action='store_true',help='run only the implemented component checks')
     args = parser.parse_args()
     name = args.case
     source = ROOT / 'tests/cases' / f'{name}.py'
@@ -45,14 +46,14 @@ def main():
             raise Blocked('case implementation is pending')
         with tempfile.TemporaryDirectory(prefix=name+'-',dir=cwd) as tmp:
             test = runpy.run_path(str(source))
-            test['check'](ROOT, Path(tmp), command, require, Blocked)
+            test['check'](ROOT, Path(tmp), command, require, Blocked, args.component)
     except Blocked as error:
         print(f'BLOCKED {name}: {error}', file=sys.stderr)
         return 77
     except Failure as error:
         print(f'FAIL {name}: {error}', file=sys.stderr)
         return 1
-    print(f'PASS {name}')
+    print(f'PASS {name}' + (' (component only)' if args.component else ''))
     return 0
 
 

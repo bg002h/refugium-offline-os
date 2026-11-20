@@ -3,7 +3,7 @@ import json
 import sys
 
 
-def check(root, work, command, require, blocked):
+def check(root, work, command, require, blocked, component):
     image = work / 'candidate.img'
     image.write_bytes(bytes(range(256))*16)
     raw = image.read_bytes()

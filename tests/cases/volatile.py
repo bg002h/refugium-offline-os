@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 
 
-def check(root,work,command,require,blocked):
+def check(root,work,command,require,blocked,component):
     control=os.environ.get('W3_MOUNTINFO')
     if not control:
         raise blocked('booted image mount inventory is required')

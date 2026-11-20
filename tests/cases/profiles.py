@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 
-def check(root,work,command,require,blocked):
+def check(root,work,command,require,blocked,component):
     folder=Path(os.environ.get('W3_PROFILES',root/'image/profiles'))
     if not folder.is_dir():
         raise blocked('no role manifests supplied')

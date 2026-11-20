@@ -3,7 +3,7 @@ from pathlib import Path
 import sys
 
 
-def check(root,work,command,require,blocked):
+def check(root,work,command,require,blocked,component):
     # Validate that the host-side baseline has the interface that a mistaken image would expose.
     actual=sorted(p.name for p in Path('/sys/class/net').iterdir())
     probe=root/'scripts/probe-kernel.py'
@@ -16,6 +16,7 @@ def check(root,work,command,require,blocked):
         raise blocked('set W3_KERNEL and W3_CONFIG to a built kernel and its resolved config')
     result=command([sys.executable,'-B',probe,'--kernel',settings['W3_KERNEL'],'--config',settings['W3_CONFIG'],'--work',work])
     require(result.returncode==0 and b'W3-PROBE PASS' in result.stdout,'unexpected network interface')
+    if component: return
     # Full acceptance also checks the contents of the actual image and a live USB Ethernet insertion.
     if not os.environ.get('W3_IMAGE_OBSERVATIONS'):
         raise blocked('complete-image driver inventory and USB hotplug observations are required')

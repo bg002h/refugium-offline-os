@@ -4,7 +4,7 @@ import sys
 import gzip
 
 
-def check(root, work, command, require, blocked):
+def check(root, work, command, require, blocked, component):
     target=root/'image/stick/preflight.py'
     # Control: a stock Debian session can start a normal program with no preflight at all.
     baseline=command([sys.executable,'-B','-c','print("wallet entry reached")'])
@@ -51,3 +51,6 @@ def check(root, work, command, require, blocked):
     require(seen((8388608,8388608))==mod.MEMORY,'unsafe boot reached the wallet')
     binary.write_bytes(b'ordinary helper')
     require(seen()==mod.MEMORY,'unsafe boot reached the wallet')
+
+    if not component:
+        raise blocked('booted GUI success and preflight refusal paths are required')
