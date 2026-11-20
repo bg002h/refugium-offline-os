@@ -16,6 +16,9 @@ NoNewPrivileges=yes
 Environment=HOME=/home/live
 Environment=XDG_RUNTIME_DIR=/run/user/1000
 Environment=LIBSEAT_BACKEND=seatd
+Environment=WAYLAND_DISPLAY=wayland-0
+Environment=XDG_CURRENT_DESKTOP=Refugium
+Environment=XDG_SESSION_TYPE=wayland
 Environment=PATH=/usr/local/bin:/usr/bin:/bin
 Environment=LIBGL_ALWAYS_SOFTWARE=1
 WorkingDirectory=/home/live/Sitting
@@ -24,7 +27,7 @@ StandardInput=tty
 StandardOutput=tty
 StandardError=tty
 ExecStartPre=/usr/lib/refugium/preflight.py
-ExecStart=/usr/bin/dbus-run-session -- /usr/bin/weston --backend=drm --renderer=pixman --config=/etc/refugium/weston.ini
+ExecStart=/usr/bin/dbus-run-session -- /usr/bin/weston --socket=wayland-0 --backend=drm --renderer=gl --config=/etc/refugium/weston.ini
 
 [Install]
 WantedBy=graphical.target

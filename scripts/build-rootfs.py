@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -55,6 +56,10 @@ def main():
         '--include=' + ','.join(sorted(packages)), base['suite'], args.work / 'chroot', *sources
     ], env=env, check=True)
     write_role_identity(args.work / 'chroot', profile)
+    if args.role == 'sitting-stick':
+        portals = args.work / 'chroot/etc/xdg/xdg-desktop-portal'
+        portals.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / 'image/session/refugium-portals.conf', portals / 'refugium-portals.conf')
 
 
 if __name__ == '__main__':

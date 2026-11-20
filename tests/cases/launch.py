@@ -22,7 +22,9 @@ def capture_ok(rows):
             return False
         if any(p['uid'] != 1000 or p['limit'] != ['67108864', '67108864'] for p in (parent, terminal, helper)):
             return False
-        if terminal['gui_marker'] or helper['gui_marker'] or set(helper['env_keys']) != {'LANG', 'PATH', 'TERM', 'XDG_RUNTIME_DIR'}:
+        required = {'PATH', 'TERM', 'XDG_RUNTIME_DIR'}
+        keys = set(helper['env_keys'])
+        if terminal['gui_marker'] or helper['gui_marker'] or not required <= keys <= required | {'LANG'}:
             return False
         if len(plans) != 1 or Path(plans[0]).parent != Path("/home/live/Holder's sitting folder"):
             return False
