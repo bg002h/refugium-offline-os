@@ -1,0 +1,14 @@
+[package]
+name = "refugium-seed"
+version = "0.2.0"
+edition = "2024"
+license = "MIT OR Unlicense"
+publish = false
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+bip39 = { version = "2", default-features = false, features = ["zeroize"] }
+sha2 = "0.10"
+zeroize = "1"

@@ -31,7 +31,10 @@ def main():
     parser.add_argument('work', type=Path, help='fresh directory for the build')
     parser.add_argument('--archive-keyring', type=Path,
                         default=Path('/usr/share/keyrings/ubuntu-archive-keyring.gpg'))
+    parser.add_argument('--seed-creator', type=Path, help='install a compatible Refugium Seed Creator build')
     args = parser.parse_args()
+    if args.seed_creator and args.role != 'sitting-stick':
+        parser.error('--seed-creator requires the sitting-stick role')
     if os.geteuid() != 0 or subprocess.run(['systemd-detect-virt', '--quiet', '--vm']).returncode:
         parser.error('run as root in a dedicated build VM')
     base = json.loads((ROOT / 'image/base.lock.json').read_text())
@@ -63,6 +66,9 @@ def main():
         backgrounds = args.work / 'chroot/usr/share/backgrounds'
         backgrounds.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(ROOT / 'image/session/refugium-offline.png', backgrounds / 'refugium-offline.png')
+        if args.seed_creator:
+            subprocess.run([ROOT / 'scripts/install-seed-creator', args.work / 'chroot',
+                            args.seed_creator.resolve(strict=True)], check=True)
         portals = args.work / 'chroot/etc/xdg/xdg-desktop-portal'
         portals.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(ROOT / 'image/session/refugium-portals.conf', portals / 'refugium-portals.conf')

@@ -1,0 +1,70 @@
+--- a/clients/desktop-shell.c
++++ b/clients/desktop-shell.c
+@@ -601,7 +601,7 @@
+ 	switch (desktop->panel_position) {
+ 	case WESTON_DESKTOP_SHELL_PANEL_POSITION_TOP:
+ 	case WESTON_DESKTOP_SHELL_PANEL_POSITION_BOTTOM:
+-		height = 32;
++		height = 70;
+ 		break;
+ 	case WESTON_DESKTOP_SHELL_PANEL_POSITION_LEFT:
+ 	case WESTON_DESKTOP_SHELL_PANEL_POSITION_RIGHT:
+--- a/desktop-shell/shell.c
++++ b/desktop-shell/shell.c
+@@ -2073,6 +2073,30 @@
+  * libweston-desktop
+  */
+ 
++static bool
++is_refugium_wallet(struct weston_desktop_surface *surface)
++{
++	const char *title = weston_desktop_surface_get_title(surface);
++	const char *app_id = weston_desktop_surface_get_app_id(surface);
++
++	return (app_id && strcmp(app_id, "mr-gui") == 0) ||
++		(title && strcmp(title, "Refugium Wallet") == 0);
++}
++
++static void
++size_refugium_wallet(struct shell_surface *shsurf)
++{
++	pixman_rectangle32_t area;
++
++	if (!shsurf->output)
++		return;
++
++	get_output_work_area(shsurf->shell, shsurf->output, &area);
++	if (area.width >= 1600 && area.height >= 800)
++		weston_desktop_surface_set_size(shsurf->desktop_surface,
++		    area.width * 57 / 100, area.height - 30);
++}
++
+ static void
+ desktop_surface_added(struct weston_desktop_surface *desktop_surface,
+ 		      void *shell)
+@@ -2128,6 +2152,8 @@
+ 	wl_list_insert(&shsurf->shell->shsurf_list, &shsurf->link);
+ 
+ 	weston_desktop_surface_set_user_data(desktop_surface, shsurf);
++	if (is_refugium_wallet(desktop_surface))
++		size_refugium_wallet(shsurf);
+ }
+ 
+ static void
+@@ -2255,6 +2281,16 @@
+ 		shell_set_view_fullscreen(shsurf);
+ 	} else if (shsurf->state.maximized) {
+ 		set_maximized_position(shell, shsurf);
++	} else if (shsurf->output && is_refugium_wallet(shsurf->desktop_surface)) {
++		pixman_rectangle32_t area;
++		struct weston_geometry geometry =
++			weston_desktop_surface_get_geometry(shsurf->desktop_surface);
++		struct weston_coord_global pos;
++
++		get_output_work_area(shell, shsurf->output, &area);
++		pos.c = weston_coord(area.x + 24 - geometry.x, area.y + 14 - geometry.y);
++		weston_view_set_position(shsurf->view, pos);
++		size_refugium_wallet(shsurf);
+ 	} else if (shsurf->xwayland.is_set) {
+ 		set_position_from_xwayland(shsurf);
+ 	} else {
