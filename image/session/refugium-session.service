@@ -1,0 +1,30 @@
+[Unit]
+Description=Refugium sitting session
+After=systemd-user-sessions.service systemd-udev-trigger.service seatd.service
+Requires=seatd.service
+Conflicts=getty@tty1.service
+
+[Service]
+Type=simple
+User=live
+Group=live
+SupplementaryGroups=video render input
+LimitMEMLOCK=67108864:67108864
+LimitCORE=0
+UMask=0077
+NoNewPrivileges=yes
+Environment=HOME=/home/live
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+Environment=LIBSEAT_BACKEND=seatd
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+Environment=LIBGL_ALWAYS_SOFTWARE=1
+WorkingDirectory=/home/live/Sitting
+TTYPath=/dev/tty1
+StandardInput=tty
+StandardOutput=tty
+StandardError=tty
+ExecStartPre=/usr/lib/refugium/preflight.py
+ExecStart=/usr/bin/dbus-run-session -- /usr/bin/weston --backend=drm --renderer=pixman --config=/etc/refugium/weston.ini
+
+[Install]
+WantedBy=graphical.target
