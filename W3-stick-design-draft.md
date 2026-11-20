@@ -49,7 +49,7 @@ The publisher signs a role-bound release manifest after these gates. On a separa
 
 | Decision | Recommendation | Other choice or dependency |
 |---|---|---|
-| B6 | Ubuntu 24.04 LTS amd64 for both roles | Use Blockstream’s Noble PPA on the node build when W5 adds reception. Qualify the three receivers against the node kernel. |
+| B6 | Ubuntu 24.04 LTS amd64 for both roles | Use Blockstream’s Noble PPA for the node software. Check installation for all three receiver types. The user handles dish setup and live reception. |
 | Terminal | Noble Alacritty with zero history configured | Reopen a different emulator only with equivalent positive-controlled tests. |
 | Strict-mode selection | Build the image's helper with strict behavior compiled in | Use an immutable policy if a missing or unreadable policy cannot weaken direct invocation. New holder text and exit codes are W3 proposals for review. |
 | Hardware | Whitelist UEFI GOP, USB HID and tested models | Enlarge the matrix as physical machines pass. Decide whether the first public release requires an enrolled Secure Boot key. |
