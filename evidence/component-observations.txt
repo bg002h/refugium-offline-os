@@ -1,0 +1,10 @@
+W3 component evidence, 2026-11-19
+Kernel 6.12.118 olddefconfig
+built in: NET UNIX SYSFS DEVTMPFS TMPFS USB USB_XHCI_HCD USB_ACM USB_HID USB_STORAGE SCSI BLK_DEV_SD VFAT_FS DRM_SIMPLEDRM DRM_VIRTIO_GPU
+disabled or unavailable: INET IPV6 NETDEVICES USB_NET_CDCETHER USB_NET_RNDIS_HOST DVB_CORE MODULES SWAP HIBERNATION COREDUMP
+
+Debian Alacritty, packaged executable with host graphics stack; synthetic eight-line display
+history setting 0: 8 retained grid rows, 8 visible, 0 accessible history rows
+history setting 10: 18 retained grid rows, 8 visible, 10 accessible history rows
+
+These observations precede image integration and physical qualification.
