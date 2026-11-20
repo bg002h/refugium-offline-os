@@ -40,3 +40,5 @@ Run the following inside a disposable root build VM with at least 10 GiB of work
 The repack assigns the signet preview its own GPT identifiers. Digest entries label the specific artifacts they cover.
 
 The wallet source was `refugium-wallet@5da720457b7f6d2cc7e9cc375d5a20c4f00909b9`. The helper was `mnemonic-refugium@c532e250a7719d0359144b20f820417e1f74870c` with the [temporary strict-memory patch](strict-test.patch), built with Cargo feature `stick-strict-test`. The [key viewer source](public-keys.c) uses GTK 3. The session grants a 64 MiB soft and hard lock limit. The helper remains unqualified for real secrets. In particular, emergency allocation failure can bypass cleanup. The session's transfer and shutdown controls and complete stick acceptance are still open.
+
+Weston displays a 3840 × 2160 slate-and-copper wallpaper using the Refugium Wallet shield. Minimize the wallet to see the entire desktop. The preview prepares the Xwayland socket directory immediately before Weston starts.

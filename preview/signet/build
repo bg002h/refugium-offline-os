@@ -36,6 +36,7 @@ rm system.squashfs
 check_input mr-sitting root/usr/bin/mr-sitting
 check_input mr-gui root/usr/bin/mr-gui
 cp -a --no-preserve=ownership "$here/root/." root/
+install -Dm0644 "$repo/image/session/refugium-offline.png" root/usr/share/backgrounds/refugium-offline.png
 install -m 0755 "$repo/image/stick/x-terminal-emulator" root/usr/local/bin/x-terminal-emulator
 # This archive is checked before extraction. It contains the Bitcoin Core Nix runtime closure.
 tar -xf "$core" -C root

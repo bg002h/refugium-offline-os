@@ -29,6 +29,8 @@ StandardOutput=tty
 StandardError=tty
 ExecStartPre=/usr/local/libexec/signet-session-check
 ExecStartPre=/usr/local/libexec/wallet-node-ready
+# Weston opens the Xwayland socket in the final session tmpfs.
+ExecStartPre=+/usr/bin/install -d -o root -g root -m 1777 /tmp/.X11-unix
 ExecStart=/usr/bin/dbus-run-session -- /usr/bin/weston --socket=wayland-0 --backend=drm --renderer=gl --config=/etc/refugium/weston.ini
 
 [Install]

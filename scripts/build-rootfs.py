@@ -57,6 +57,12 @@ def main():
     ], env=env, check=True)
     write_role_identity(args.work / 'chroot', profile)
     if args.role == 'sitting-stick':
+        session = args.work / 'chroot/etc/refugium'
+        session.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / 'image/session/weston.ini', session / 'weston.ini')
+        backgrounds = args.work / 'chroot/usr/share/backgrounds'
+        backgrounds.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / 'image/session/refugium-offline.png', backgrounds / 'refugium-offline.png')
         portals = args.work / 'chroot/etc/xdg/xdg-desktop-portal'
         portals.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(ROOT / 'image/session/refugium-portals.conf', portals / 'refugium-portals.conf')
