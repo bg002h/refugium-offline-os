@@ -1,0 +1,10 @@
+[Unit]
+Description=Development image serial boot observations
+After=refugium-session.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 -B /usr/lib/refugium/vm-observe.py
+
+[Install]
+WantedBy=multi-user.target

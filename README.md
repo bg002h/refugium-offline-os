@@ -7,6 +7,7 @@ This repository holds the W3 design and local engineering work for the offline s
 - [W3 specification](design/SPEC_w3_stick.md) defines the proposed holder screens, refusals and acceptance tests.
 - [Build plan](design/PLAN_w3_stick.md) and [coverage map](design/PLAN_w3_stick-coverage.tsv) give the proposed test-first build sequence.
 - [Noble receiver evidence](evidence/noble-receiver.md) records installation on a clean Ubuntu filesystem and the two image base builds.
+- [Noble VM boot evidence](evidence/noble-vm-boot.md) records two independent builds of each USB image, four UEFI boots, the stick's startup refusal and the separate wallet and memory tests.
 - [Distribution research](design/agent-reports/base-options.md) records the package-index comparison.
 - [Platform research](design/agent-reports/platform-evidence.md) records the kernel and terminal experiments.
 - [Kernel boot observations](evidence/kernel-boot.txt) record the guest with two network adapters presented and a real unprivileged memory-lock check.
