@@ -14,4 +14,4 @@ This repository holds the W3 design and local engineering work for the offline s
 
 The dated secure-memory rulings in the coordinator repository govern the stick. A released image requires complete image builds, boots and application integration evidence. Component measurements alone do not qualify an image.
 
-The original spec checkpoint `w3-spec-v1` used Debian 13. The current spec targets Ubuntu 24.04 LTS. The earlier unsigned diagnostic disk and terminal measurements used Debian. The diagnostic deliberately omits a qualified strict helper. The released stick, full wallet journey and physical support matrix still require their own results.
+The original spec checkpoint `w3-spec-v1` used Debian 13. The current spec review checkpoint is `w3-spec-v2`, targeting Ubuntu 24.04 LTS. The earlier unsigned diagnostic disk and terminal measurements used Debian. The diagnostic deliberately omits a qualified strict helper. The released stick, full wallet journey and physical support matrix still require their own results.
