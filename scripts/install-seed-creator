@@ -1,0 +1,20 @@
+#!/bin/sh
+set -eu
+[ "$#" -eq 2 ] || { echo 'Usage: install-seed-creator ROOTFS SEED_CREATOR_BINARY' >&2; exit 2; }
+root=$1
+binary=$2
+here=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+install -Dm0755 "$binary" "$root/usr/bin/refugium-seed"
+install -Dm0644 "$here/image/tools/refugium-seed/seed-creator.png" \
+    "$root/usr/share/icons/hicolor/64x64/apps/refugium-seed.png"
+install -Dm0644 "$here/image/tools/refugium-seed/seed-creator-panel.png" \
+    "$root/usr/share/icons/hicolor/32x32/apps/refugium-seed.png"
+config="$root/etc/refugium/weston.ini"
+if ! grep -Fxq 'path=/usr/bin/refugium-seed' "$config"; then
+    cat >> "$config" <<'CONF'
+
+[launcher]
+icon=/usr/share/icons/hicolor/32x32/apps/refugium-seed.png
+path=/usr/bin/refugium-seed
+CONF
+fi

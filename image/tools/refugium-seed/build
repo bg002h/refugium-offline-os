@@ -1,0 +1,17 @@
+#!/bin/bash
+set -euo pipefail
+here=$(cd "$(dirname "$0")" && pwd)
+out=$(realpath -m "${1:?Usage: build OUTPUT}")
+work="$(dirname "$out")/seed-build"
+mkdir -p "$work" "$work/tmp"
+export TMPDIR="$work/tmp" CARGO_TARGET_DIR="$work/cargo"
+protocol=$(pkg-config --variable=pkgdatadir wayland-protocols)/stable/xdg-shell/xdg-shell.xml
+wayland-scanner client-header "$protocol" "$work/xdg-shell-client.h"
+wayland-scanner private-code "$protocol" "$work/xdg-shell.c"
+cargo build --locked --manifest-path "$here/Cargo.toml"
+read -ra headers <<< "$(pkg-config --cflags wayland-client cairo xkbcommon)"
+read -ra libraries <<< "$(pkg-config --libs wayland-client cairo xkbcommon)"
+version=$(sed -n 's/^version = "\(.*\)"$/\1/p' "$here/Cargo.toml")
+"${CC:-cc}" -DSEED_VERSION=\""$version"\" -Wall -Wextra -Werror -I"$work" "${headers[@]}" \
+    "$here/display.c" "$work/xdg-shell.c" "$CARGO_TARGET_DIR/debug/librefugium_seed.a" \
+    "${libraries[@]}" -lm -o "$out"

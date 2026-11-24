@@ -30,7 +30,7 @@ The configured display is 1920 × 1200. The sitting terminal opens at about 95% 
 
 The kit has three pinned binary inputs. The clipboard base supplies the Ubuntu Noble desktop, the complete example fixture, the GTK viewer and the two application binaries. The Core tar contains the runtime dependency closure for Bitcoin Core 31.1. The Linux 6.12.118 kernel uses [kernel.config](kernel.config). Obtain these three inputs from the coordinator. Their digests and the two installed application hashes are in [SHA256SUMS](SHA256SUMS).
 
-Run the following inside a disposable root build VM with at least 10 GiB of workspace, systemd-ukify with its x86-64 EFI stub, static BusyBox, mtools, squashfs-tools, binutils, cpio, dosfstools, gzip and Python 3. The build verifies its inputs, extracts a fresh base, installs the signet profile and writes a new disk.
+Run the following inside a disposable root build VM with at least 10 GiB of workspace, systemd-ukify with its x86-64 EFI stub, static BusyBox, mtools, squashfs-tools, binutils, cpio, dosfstools, gzip, Python 3, a C compiler, pkg-config and GTK 3 development headers. The build verifies its inputs, extracts a fresh base, installs the signet profile and writes a new disk.
 
 ```sh
 ./build /path/to/clipboard-base.img /path/to/core.tar /path/to/signet-kernel \
@@ -42,3 +42,19 @@ The repack assigns the signet preview its own GPT identifiers. Digest entries la
 The wallet source was `refugium-wallet@5da720457b7f6d2cc7e9cc375d5a20c4f00909b9`. The helper was `mnemonic-refugium@c532e250a7719d0359144b20f820417e1f74870c` with the [temporary strict-memory patch](strict-test.patch), built with Cargo feature `stick-strict-test`. The [key viewer source](public-keys.c) uses GTK 3. The session grants a 64 MiB soft and hard lock limit. The helper remains unqualified for real secrets. In particular, emergency allocation failure can bypass cleanup. The session's transfer and shutdown controls and complete stick acceptance are still open.
 
 Weston displays a 3840 × 2160 slate-and-copper wallpaper using the Refugium Wallet shield. Minimize the wallet to see the entire desktop. The preview prepares the Xwayland socket directory immediately before Weston starts.
+
+## Seed Creator
+
+When the preview is built with the optional Seed Creator binary, the
+sprout in the Weston panel opens a standalone English BIP39 generator.
+Use synthetic entropy in this signet preview. Type 12 or 24, choose a
+physical draw, and back up the words shown on screen. Enter hides the
+phrase and starts the choice between checking every word and sampling
+4–12 word positions. Press F2 during verification to review the phrase and start a fresh check. [Build and use the Seed Creator](../../image/tools/refugium-seed/README.md)
+
+The preview can use a 70-pixel Weston panel with 64 × 64 launchers and
+left-aligned wallet placement. Apply [the desktop patch](weston-desktop.patch)
+to Weston 13.0.0, build the `clients/weston-desktop-shell` and
+`desktop-shell/desktop-shell.so` Meson targets against Ubuntu Noble, and
+set `WESTON_BUILD_DIR` to the absolute Meson build directory when running
+the image recipe. The stock Weston build uses the compact launcher images.
